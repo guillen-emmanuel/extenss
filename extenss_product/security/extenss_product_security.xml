@@ -1,0 +1,65 @@
+<?xml version="1.0" ?>
+<odoo>
+    <record model="ir.module.category" id="module_category_extenss_product_credit_type">
+        <field name="name">Credit Type</field>
+    </record>
+    <!--User Group-->
+    <record id="extenss_product_credit_type_group_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_category_extenss_product_credit_type"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <!--Manager Group-->
+    <record id="extenss_product_credit_type_group_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="module_category_extenss_product_credit_type"/>
+        <field name="implied_ids" eval="[(4, ref('extenss_product_credit_type_group_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_root')),
+									(4, ref('base.user_admin'))]"/>
+    </record>
+    <record model="ir.module.category" id="module_category_extenss_product_calculation_base">
+        <field name="name">Calculation Base</field>
+    </record>
+    <record id="extenss_product_calculation_base_group_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_category_extenss_product_calculation_base"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="extenss_product_calculation_base_group_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="module_category_extenss_product_calculation_base"/>
+        <field name="implied_ids" eval="[(4, ref('extenss_product_calculation_base_group_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_root')),
+									(4, ref('base.user_admin'))]"/>
+    </record>
+    <record model="ir.module.category" id="module_category_extenss_product_base_interest_rate">
+        <field name="name">Base Interest Rate</field>
+    </record>
+    <record id="extenss_product_base_interest_rate_group_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_category_extenss_product_base_interest_rate"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="extenss_product_base_interest_rate_group_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="module_category_extenss_product_base_interest_rate"/>
+        <field name="implied_ids" eval="[(4, ref('extenss_product_base_interest_rate_group_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_root')),
+									(4, ref('base.user_admin'))]"/>
+    </record>
+    <record model="ir.module.category" id="module_category_extenss_product_frequencies">
+        <field name="name">Frequencies</field>
+    </record>
+    <record id="extenss_product_frequencies_group_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_category_extenss_product_frequencies"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="extenss_product_frequencies_group_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="module_category_extenss_product_frequencies"/>
+        <field name="implied_ids" eval="[(4, ref('extenss_product_frequencies_group_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_root')),
+									(4, ref('base.user_admin'))]"/>
+    </record>
+</odoo>

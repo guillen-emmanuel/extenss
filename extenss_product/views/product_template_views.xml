@@ -1,0 +1,140 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="product_template_product_form_extend" model="ir.ui.view">
+        <field name="name">Extenss: add Financial Product </field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group" position="before">
+                <group name="group_top">
+                    <group name="group_left">                       
+                        <field name="default_code" string="Product Code" required="1"/>
+                        <field name="credit_type" required="1"/>
+                        <field name="calculation_type" required="1"/>
+                        <field name="calculation_base" required="1"/>
+                        <field name="base_interest_rate"/>
+                        <field name="point_base_interest_rate" attrs="{'invisible':[('hide', '=', True)]}"/>
+                        <field name="min_amount" required="1"/>
+                        <field name="max_amount" required="1"/>
+                        <field name="min_age" required="1"/>
+                        <field name="max_age" required="1"/>
+                        <field name="apply_company"/>
+                        <field name="apply_person"/>
+                        <field name="hide" invisible="1"/>
+                    </group>
+                    <group name="group_right">                       
+                        <field name="sic_consult"/>                                                      
+                        <field name="active"/>
+                        <field name="include_taxes"/>
+                        <field name="endorsement"/>
+                        <field name="guarantee"/>
+                        <field name="socioeconomic_study"/>
+                        <field name="beneficiaries"/>
+                        <field name="financial_situation"/>
+                        <field name="patrimonial_relationship"/>
+                        <field name="obligated_solidary"/>
+                    </group>
+                </group>
+                <group string="Description">
+                    <field name="description" nolabel="1" placeholder="This note is only for internal purposes."/>
+                </group>
+            </xpath>
+            <xpath expr="//page[@name='purchase']" position="after">
+                <page string="Documents" name="documents" invisible="0">
+                    <field name="docs_ids">
+                        <tree>
+                            <field name="catalogo_docs"/>
+                            <field name="flag_activo"/>
+                        </tree>
+                        <form>
+                            <group>
+                                <group>
+                                    <field name="catalogo_docs"/><!-->widget="many2many_tags"/><-->
+                                </group>
+                                <group>
+                                    <field name="flag_activo"/>
+                                </group>
+                            </group>
+                        </form>
+                    </field>
+                </page>
+                <page string="Recruitment Documents" name="recruit_documents" invisible="0">
+                    <field name="rec_docs_ids">
+                        <tree>
+                            <field name="catalog_recru_docs"/>
+                        </tree>
+                        <form>
+                            <group>
+                                <group>
+                                    <field name="catalog_recru_docs"/><!-->widget="many2many_tags"/><-->
+                                </group>
+                            </group>
+                        </form>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    <record id="product_interest_rate_form_extend" model="ir.ui.view">
+        <field name="name">Extenss: add Interes Rate</field>
+        <field name="model">product.template.attribute.value</field>
+        <field name="inherit_id" ref="product.product_template_attribute_value_view_form"/>
+        <field name="arch" type="xml">
+            <field name="price_extra" position="after">
+                <label for="interest_rate_extra"/>
+                <div id="interest_rate_extra">
+                    <field name="interest_rate_extra" string="Interest Rate" required="1" widget="float" class="oe_inline"/>
+                    <span class="oe_grey"> %%</span>
+                </div>
+                <label for="cat_extra"/>
+                <div id="cat_extra">
+                    <field name="cat_extra" string="Cat" required="1" widget="float" class="oe_inline"/>
+                    <span class="oe_grey"> %%</span>
+                </div>
+                <field name="frequencies_extra" required="1"/>
+                <field name="term_extra" required="1"/>
+                <field name="frequency_extra" required="1" invisible="1"/>
+            </field> 
+        </field>
+    </record>
+    <record id="product_interest_rate_tree_extend" model="ir.ui.view">
+        <field name="name">Extenss: add Interes Rate Extra Tree</field>
+        <field name="model">product.template.attribute.value</field>
+        <field name="inherit_id" ref="product.product_template_attribute_value_view_tree"/>
+        <field name="arch" type="xml">
+            <field name="price_extra" position="after">
+                <field name="interest_rate_extra" />
+                <field name="cat_extra" />
+                <field name="frequencies_extra" />
+                <field name="term_extra" />
+            </field> 
+        </field>
+    </record>
+    <record id="view_country_form" model="ir.ui.view">
+        <field name="name">product.base.interest.rate.form</field>
+        <field name="model">extenss.product.base_interest_rate</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box">
+                    </div>
+                    <group name="main_group">
+                        <group>
+                            <field name="name"/>
+                        </group>
+                        <group>
+                            <field name="shortcut"/>
+                        </group>
+                    </group>
+                    <label for="interest_rate_ids"/>
+                    <field name="interest_rate_ids">
+                        <tree editable="bottom">
+                            <field name="date"/>
+                            <field name="interest_rate"/>
+                        </tree>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>   
+</odoo>
