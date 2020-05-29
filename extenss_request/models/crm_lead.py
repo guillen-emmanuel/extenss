@@ -132,7 +132,7 @@ class Lead(models.Model):
         #if quotations:
         for reg in quotations:
             if not reg.signature:
-                raise ValidationError(_('Missing the quote signature'))
+                raise ValidationError(_('Missing the quote signature %s' % reg.name))
 
             if self.partner_type == 'company':
                 if reg.product_id.financial_situation:
@@ -147,15 +147,15 @@ class Lead(models.Model):
                         raise ValidationError(_('Enter data in Income statement tab in any of the sections'))
             if self.partner_type == 'person':
                 if reg.product_id.endorsement:
-                    cont_reg = 0
+                    cont_reg_av = 0
                     reg_pf = self.env['extenss.customer.personal_ref'].search([('personal_ref_id', '=', self.id)])
                     if not reg_pf:
-                        raise ValidationError(_('Add a record in Personal references tab'))
+                        raise ValidationError(_('Add an Aval type record in the Personal References tab'))
                     for r in reg_pf:
                         reg_p = self.env['extenss.customer.type_refbank'].search([('id', '=', r.type_reference_personal_ref.id)])
                         if reg_p.shortcut == 'AV':
-                            cont_reg += 1
-                    if cont_reg <= 0:
+                            cont_reg_av += 1
+                    if cont_reg_av <= 0:
                         raise ValidationError(_('Enter a Endorsement type record in Personal references tab for quotation number %s' % reg.name))
                 if reg.product_id.guarantee:
                     reg_w = self.env['extenss.crm.lead.ownership'].search([('ownership_id', '=', self.id)])
@@ -169,15 +169,15 @@ class Lead(models.Model):
                     if not reg_exp:
                         raise ValidationError(_('Enter a record in Source income tab in the section of Expenses for quotation number %s' % reg.name))
                 if reg.product_id.beneficiaries:
-                    cont_reg = 0
+                    cont_reg_bf = 0
                     reg_benef = self.env['extenss.customer.personal_ref'].search([('personal_ref_id', '=', self.id)])
                     if not reg_benef:
-                        raise ValidationError(_('Add a record in Personal references tab'))
+                        raise ValidationError(_('Add a beneficiary type record in the Personal References tab'))
                     for r in reg_benef:
                         reg_p = self.env['extenss.customer.type_refbank'].search([('id', '=', r.type_reference_personal_ref.id)])
                         if reg_p.shortcut == 'BF':
-                            cont_reg += 1
-                    if cont_reg <= 0:
+                            cont_reg_bf += 1
+                    if cont_reg_bf <= 0:
                         raise ValidationError(_('Enter a Beneficiaries type record in Personal references tab for quotation number %s' % reg.name))
                 if reg.product_id.financial_situation:
                     reg_pos = self.env['extenss.crm.lead.financial_pos'].search([('financial_pos_id', '=', self.id)])
@@ -191,31 +191,37 @@ class Lead(models.Model):
                     if self.total_resident <= 0.0:
                         raise ValidationError(_('Enter data in Residence profile tab for quotation number %s' % reg.name))
                 if reg.product_id.obligated_solidary:
-                    cont_reg = 0
+                    cont_reg_os = 0
                     reg_os = self.env['extenss.customer.personal_ref'].search([('personal_ref_id', '=', self.id)])
-                    if not reg_benef:
-                        raise ValidationError(_('Add a record in Personal references tab'))
+                    if not reg_os:
+                        raise ValidationError(_('Add a record of type bound by solidarity in the Personal References tab'))
                     for r in reg_os:
                         reg_p = self.env['extenss.customer.type_refbank'].search([('id', '=', r.type_reference_personal_ref.id)])
                         if reg_p.shortcut == 'OS':
                             cont_reg += 1
                     if cont_reg <= 0:
                         raise ValidationError(_('Enter a Solidarity bound type record in Personal references tab for quotation number %s' % reg.name))
-
-            if self.stage_id.id == 4:
-                request_ids = self.env['sign.request.item'].search([('partner_id', '=', self.partner_id.id)]).mapped('sign_request_id')
-                if self.partner_id.signature_count>0:
-                    no_documents=0
-                    for ref in request_ids:
-                        doc_name=ref.reference[-10:-4]
-                        if doc_name == quotations.name :
-                            no_documents=1
-                            if ref.state != 'signed' :
-                                raise ValidationError(_('unsigned document %s' % ref.reference))
-                    if no_documents == 0:
-                        raise ValidationError(_('Documents not added'))
-                else:
-                    raise ValidationError(_('document no asignados'))
+            if reg.state == 'sale':
+                if self.stage_id.id == 4:
+                    request_ids = self.env['sign.request.item'].search([('partner_id', '=', self.partner_id.id)]).mapped('sign_request_id')
+                    for df in reg.product_id.rec_docs_ids:
+                        doc_fal = df.catalog_recru_docs.name
+                        for ref in request_ids:
+                            doc_name=ref.reference[-10:-4]
+                            if doc_name == quotations.name :
+                                doc_name=ref.reference[0:-11]
+                                if doc_name == 'Contrato': doc_name='CON'
+                                if doc_name == 'Pagare': doc_name='PAY'
+                                if doc_name == df.catalog_recru_docs.shortcut :
+                                    doc_fal=''
+                                    doc_name=ref.reference[-10:-4]
+                                    if doc_name == quotations.name :
+                                        no_documents=1
+                                        if ref.state != 'signed' :
+                                            raise ValidationError(_('unsigned document %s' % ref.reference))
+                                    break
+                        if len(doc_fal) > 0:
+                            raise ValidationError(_('must add %s' % doc_fal))       
 
     def action_autorize_sale(self):
         self.user_auth_req = self.env.user.id

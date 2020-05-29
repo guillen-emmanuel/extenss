@@ -292,8 +292,6 @@ class SaleOrder(models.Model):
 
                 existe = self.env['documents.document'].search(['|', ('partner_id', '=', self.partner_id.id), ('lead_id', '=', self.opportunity_id.id), ('doc_prod_id', '=', regname.id)])
                 existe_cliente = self.env['documents.document'].search([('partner_id', '=', self.partner_id.id),('doc_prod_id', '=', regname.id)])
-                print(existe)
-                print(existe_cliente)
 
                 if not existe.id and not existe_cliente:
                     document = self.env['documents.document'].create({
@@ -309,21 +307,29 @@ class SaleOrder(models.Model):
                     })
 
     def action_cancel(self):
+        docs_self = []
+        docs_ord = []
         bandera = False
         name = self.env['extenss.product.cat_docs'].search([('doc_id', '=', self.product_id.product_tmpl_id.id)])
-        for reg in name:
-            namedoc = self.env['extenss.product.type_docs'].search([('id', '=', reg.catalogo_docs.id)])
-            print(namedoc.name)
-            orders = self.env['sale.order'].search([('opportunity_id.id', '=', self.opportunity_id.id),('state', '=', 'sale'),('id', '!=', self.id)])
-            for reg_ords in orders:
-                name_or = self.env['extenss.product.cat_docs'].search([('doc_id', '=', reg_ords.product_id.product_tmpl_id.id)])
-                for reg_or in name_or:
-                    namedoc_or = self.env['extenss.product.type_docs'].search([('id', '=', reg_or.catalogo_docs.id)])
-                    if namedoc_or.id == namedoc.id:
-                        bandera = True
-            if bandera == False:
-                #self.env['documents.document'].search([('partner_id', '=', self.partner_id.id),('name', '=', namedoc.name),('lead_id', '=', self.opportunity_id.id)]).unlink()
-                self.env['documents.document'].search(['|', '&', ('partner_id', '=', self.partner_id.id), ('lead_id', '=', self.opportunity_id.id), ('doc_prod_id', '=', namedoc.id)]).unlink()
+        for reg_type_or in name:
+            namedoc = self.env['extenss.product.type_docs'].search([('id', '=', reg_type_or.catalogo_docs.id)])
+            for reg_or in namedoc:
+                docs_self.append(reg_or.id)
+                print(docs_self)
+
+        orders = self.env['sale.order'].search([('opportunity_id.id', '=', self.opportunity_id.id),('state', '=', 'sale'),('id', '!=', self.id)])
+        for reg_ords in orders:
+            namedocs_ord = self.env['extenss.product.cat_docs'].search([('doc_id', '=', reg_ords.product_id.product_tmpl_id.id)])
+            for regdocs_ord in namedocs_ord:
+                namedoc_or = self.env['extenss.product.type_docs'].search([('id', '=', regdocs_ord.catalogo_docs.id)])
+                print(namedoc_or.id)
+                docs_ord.append(namedoc_or.id)
+
+        for record in docs_self:
+            if record not in docs_ord:
+                id_delete = record
+                print("entra a record", id_delete)
+                self.env['documents.document'].search(['|', '&', ('partner_id', '=', self.partner_id.id), ('lead_id', '=', self.opportunity_id.id), ('doc_prod_id', '=', id_delete), ('attachment_id', '=', False)]).unlink()
 
         res = super(SaleOrder, self).action_cancel()
         return res
