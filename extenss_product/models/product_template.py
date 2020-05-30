@@ -106,7 +106,7 @@ class ExtenssFrequencies(models.Model):
 class Product(models.Model):
     _inherit = 'product.template'
 
-    @api.constrains('min_age', 'max_age', 'min_amount', 'max_amount')   
+    @api.constrains('min_age', 'max_age', 'min_amount', 'max_amount', 'rec_docs_ids')   
     def _check_fields(self):
         for product in self:
             if product.min_age <=0:
@@ -125,6 +125,8 @@ class Product(models.Model):
                 raise ValidationError(_('The Max. Amount must be greater than 0'))
             if product.min_amount >= product.max_amount:
                 raise ValidationError(_('The Min. Amount must be less than The Max. Amount'))
+            if len(product.rec_docs_ids)==0:
+                raise ValidationError(_('must add Recruitment Documents'))
 
     @api.constrains('base_interest_rate')   
     def _check_bir(self):

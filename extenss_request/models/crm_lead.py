@@ -198,30 +198,30 @@ class Lead(models.Model):
                     for r in reg_os:
                         reg_p = self.env['extenss.customer.type_refbank'].search([('id', '=', r.type_reference_personal_ref.id)])
                         if reg_p.shortcut == 'OS':
-                            cont_reg += 1
-                    if cont_reg <= 0:
+                            cont_reg_os += 1
+                    if cont_reg_os <= 0:
                         raise ValidationError(_('Enter a Solidarity bound type record in Personal references tab for quotation number %s' % reg.name))
             if reg.state == 'sale':
                 if self.stage_id.id == 4:
+                    if len(reg.product_id.rec_docs_ids) == 0 :
+                        raise ValidationError(_('must add Recruitment documents of product %s' % reg.product_id.name))
                     request_ids = self.env['sign.request.item'].search([('partner_id', '=', self.partner_id.id)]).mapped('sign_request_id')
                     for df in reg.product_id.rec_docs_ids:
                         doc_fal = df.catalog_recru_docs.name
                         for ref in request_ids:
                             doc_name=ref.reference[-10:-4]
-                            if doc_name == quotations.name :
+                            if doc_name == reg.name :
                                 doc_name=ref.reference[0:-11]
                                 if doc_name == 'Contrato': doc_name='CON'
                                 if doc_name == 'Pagare': doc_name='PAY'
                                 if doc_name == df.catalog_recru_docs.shortcut :
                                     doc_fal=''
                                     doc_name=ref.reference[-10:-4]
-                                    if doc_name == quotations.name :
-                                        no_documents=1
+                                    if doc_name == reg.name :
                                         if ref.state != 'signed' :
                                             raise ValidationError(_('unsigned document %s' % ref.reference))
-                                    break
                         if len(doc_fal) > 0:
-                            raise ValidationError(_('must add %s' % doc_fal))       
+                            raise ValidationError(_('must add %s for order %s' % (doc_fal,reg.name)))       
 
     def action_autorize_sale(self):
         self.user_auth_req = self.env.user.id
