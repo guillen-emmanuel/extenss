@@ -167,12 +167,15 @@ class ExtenssCustomerBankReferences(models.Model):
     @api.constrains('number_account', 'banking_reference')
     def _check_bankref_none(self):
         for reg_number in self:
+            print(reg_number.number_account)
+            print(reg_number.banking_reference)
             if reg_number.number_account == False and reg_number.banking_reference == False:
                 raise ValidationError(_('Enter a value for Banking reference o Number account in tab Bank References'))
             else:
-                digits = [int(x) for x in reg_number.banking_reference if x.isdigit()]
-                if len(digits) != 18:
-                    raise ValidationError(_('The banking reference must be a 18 digits in tab Bank References'))
+                if reg_number.banking_reference:
+                    digits = [int(x) for x in reg_number.banking_reference if x.isdigit()]
+                    if len(digits) != 18:
+                        raise ValidationError(_('The banking reference must be a 18 digits in tab Bank References'))
 
     bank_ref_id = fields.Many2one('res.partner')#modelo padre
     #product_type = fields.Char(string='Product type', required=True, translate=True)
@@ -225,14 +228,14 @@ class ExtenssCustomerPersonalReferences(models.Model):
     cell_phone_personal_res = fields.Char(string='Cell phone', translate=True)
     email_personal_ref = fields.Char(string='Email', translate=True)
 
-    ###--Aditional identifications
-    class ExtenssCustomerAditionalIdentifications(models.Model):
-        _name = "extenss.customer.add_identifications"
-        _description = "Aditional identifications"
+###--Aditional identifications
+class ExtenssCustomerAditionalIdentifications(models.Model):
+    _name = "extenss.customer.add_identifications"
+    _description = "Aditional identifications"
 
-        add_ident_id = fields.Many2one('res.partner')#modelo padre
-        type_of_indentification = fields.Many2one('extenss.customer.identification_type', string='Type of identification', required=True,)
-        identification_ai = fields.Char(string='Identification', required=True, translate=True)
+    add_ident_id = fields.Many2one('res.partner')#modelo padre
+    type_of_indentification = fields.Many2one('extenss.customer.identification_type', string='Type of identification', required=True,)
+    identification_ai = fields.Char(string='Identification', required=True, translate=True)
 
     ###--Work information
 class ExtenssCustomerWorkInfo(models.Model):
