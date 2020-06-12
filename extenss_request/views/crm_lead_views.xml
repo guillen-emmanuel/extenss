@@ -22,13 +22,18 @@
             </xpath>
             <xpath expr="//button[@name='action_set_won_rainbowman']" position="after">
                 <button name="action_send_sale" string="Send" type="object" class="btn-primary" attrs="{'invisible': ['|', ('document_count', '=', 0),('stage_id', '!=', 1)]}"/>
-                <button name="action_activation" string="Activation" type="object" class="btn-primary" attrs="{'invisible': [('stage_id', '!=', 3)]}"/>
             </xpath>
             <xpath expr="//button[@name='action_send_sale']" position="after">
                 <button name="action_autorize_sale" string="Authorize" type="object" class="btn-primary" attrs="{'invisible': [('stage_id', '!=', 2)]}"/>
             </xpath>
             <xpath expr="//button[@name='action_autorize_sale']" position="after">
                 <button name="action_refuse_sale" string="To refuse" type="object" class="btn-primary" attrs="{'invisible': [('stage_id', '!=', 2)]}"/>
+            </xpath>
+            <xpath expr="//button[@name='action_autorize_sale']" position="after">
+                <button name="action_approved_sale" string="Approved" type="object" class="btn-primary" attrs="{'invisible': ['|', ('stage_id', 'not in', [3,4,5]),('active', '=', False)]}"/>                                                     
+            </xpath>
+            <xpath expr="//button[@name='action_approved_sale']" position="after">
+                <button name="action_rejected_sale" string="Rejected" type="object" class="btn-primary" attrs="{'invisible': ['|', ('stage_id', 'not in', [3,4,5]),('active', '=', False)]}"/>
             </xpath>
             <!-- <xpath expr="//widget[@name='web_ribbon']" position="replace">
                 <widget name="web_ribbon" title="Lost" bg_color="bg-danger" attrs="{'invisible': ['|', ('probability', '&gt;', 0), ('active', '=', True)]}"/>
@@ -196,7 +201,7 @@
                                         </page>
                                     </notebook>
                                 </group>
-                        </sheet>
+                            </sheet>
                         </form>
                     </field>
                 </page>

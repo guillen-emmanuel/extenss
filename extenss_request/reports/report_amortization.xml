@@ -160,60 +160,33 @@
                 <br></br>
                 <table style="border:2px solid black;width:1000px;border-collapse: collapse;">
                     <tr>
-                        <th style="text-align: center;border:1px solid black;border-collapse: collapse;">No. Payment</th>
-                        <th style="text-align: center;border:1px solid black;border-collapse: collapse;">End Date</th>
-                        <th style="text-align: center;border:1px solid black;border-collapse: collapse;">Initial Balance</th>
-                        <th style="text-align: center;border:1px solid black;border-collapse: collapse;">Capital</th>
-                        <th style="text-align: center;border:1px solid black;border-collapse: collapse;">Interest</th>
-                        <t t-if="doc.credit_type.shortcut != 'CS'"><th style="text-align: center;border:1px solid black;border-collapse: collapse;">Monthly Rent</th></t>
-                        <t t-if="doc.credit_type.shortcut != 'AP'"><th style="text-align: center;border:1px solid black;border-collapse: collapse;">Iva Interest</th></t>
-                        <t t-if="doc.credit_type.shortcut == 'AF'"><th style="text-align: center;border:1px solid black;border-collapse: collapse;">Iva Capital</th></t>
-                        <t t-if="doc.credit_type.shortcut == 'AP'"><th style="text-align: center;border:1px solid black;border-collapse: collapse;">Iva Rent</th></t>
-                        <t t-if="doc.credit_type.shortcut != 'CS'"><th style="text-align: center;border:1px solid black;border-collapse: collapse;">Total Rent</th></t>
-                        <t t-if="doc.credit_type.shortcut == 'CS'"><th style="text-align: center;border:1px solid black;border-collapse: collapse;">Payment</th></t>
+                        <th style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;">No. Payment</th>
+                        <th style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;">End Date</th>
+                        <th style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;">Initial Balance</th>
+                        <th style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;">Capital</th>
+                        <th style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;">Interest</th>
+                        <t t-if="doc.credit_type.shortcut != 'CS'"><th style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;">Monthly Rent</th></t>
+                        <t t-if="doc.credit_type.shortcut != 'AP'"><th style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;">Iva Interest</th></t>
+                        <t t-if="doc.credit_type.shortcut == 'AF'"><th style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;">Iva Capital</th></t>
+                        <t t-if="doc.credit_type.shortcut == 'AP'"><th style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;">Iva Rent</th></t>
+                        <t t-if="doc.credit_type.shortcut != 'CS'"><th style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;">Total Rent</th></t>
+                        <t t-if="doc.credit_type.shortcut == 'CS'"><th style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;">Payment</th></t>
                     </tr>
-                    <t t-if="doc.credit_type.shortcut == 'CS'">
-                        <t t-foreach="doc.amortization_cs_ids" t-as="amort">
+                        <t t-foreach="doc.amortization_ids" t-as="amort">
                             <tr>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.no_payment"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.date_end.strftime('%d-%m-%Y')"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="'{0:,.2f}'.format(round(float(amort.initial_balance), 2))"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="'{0:,.2f}'.format(round(float(amort.capital), 2))"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.interest"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.iva_interest"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.payment"/></td>
+                                <td style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.no_payment"/></td>
+                                <td style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.date_end.strftime('%d-%m-%Y')"/></td>
+                                <td style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="'{0:,.2f}'.format(round(float(amort.initial_balance), 2))"/></td>
+                                <td style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="'{0:,.2f}'.format(round(float(amort.capital), 2))"/></td>
+                                <td style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.interest"/></td>
+                                <t t-if="doc.credit_type.shortcut != 'CS'"><td style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.payment"/></td></t>
+                                <t t-if="doc.credit_type.shortcut != 'AP'"><td style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.iva_interest"/></td></t>
+                                <t t-if="doc.credit_type.shortcut == 'AF'"><td style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="'{0:,.2f}'.format(round(float(amort.iva_capital), 2))"/></td></t>
+                                <t t-if="doc.credit_type.shortcut == 'AP'"><td style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="'{0:,.2f}'.format(round(float(amort.iva_rent), 2))"/></td></t>
+                                <t t-if="doc.credit_type.shortcut != 'CS'"><td style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="'{0:,.2f}'.format(round(float(amort.total_rent), 2))"/></td></t>
+                                <t t-if="doc.credit_type.shortcut == 'CS'"><td style="font-size: 10px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.payment"/></td></t>
                             </tr>
                         </t>
-                    </t>
-                    <t t-if="doc.credit_type.shortcut == 'AF'">
-                        <t t-foreach="doc.amortization_af_ids" t-as="amort">
-                            <tr>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.no_payment"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.date_end.strftime('%d-%m-%Y')"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="'{0:,.2f}'.format(round(float(amort.initial_balance), 2))"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="'{0:,.2f}'.format(round(float(amort.capital), 2))"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.interest"/></td>   
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.payment"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.iva_interest"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="'{0:,.2f}'.format(round(float(amort.iva_capital), 2))"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="'{0:,.2f}'.format(round(float(amort.total_rent), 2))"/></td>
-                            </tr>
-                        </t>
-                    </t>
-                    <t t-if="doc.credit_type.shortcut == 'AP'">
-                        <t t-foreach="doc.amortization_ap_ids" t-as="amort">
-                            <tr>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.no_payment"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.date_end.strftime('%d-%m-%Y')"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="'{0:,.2f}'.format(round(float(amort.initial_balance), 2))"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="'{0:,.2f}'.format(round(float(amort.capital), 2))"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.interest"/></td>   
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="amort.payment"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="'{0:,.2f}'.format(round(float(amort.iva_rent), 2))"/></td>
-                                <td style="font-size: 15px;text-align: center;border:1px solid black;border-collapse: collapse;"><t t-esc="'{0:,.2f}'.format(round(float(amort.total_rent), 2))"/></td>
-                            </tr>
-                        </t>
-                    </t>
                 </table>
             </t>
         </t>

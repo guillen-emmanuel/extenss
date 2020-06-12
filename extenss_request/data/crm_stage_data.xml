@@ -13,20 +13,13 @@
         <field name="sequence">3</field>
     </record>
     <record model="crm.stage" id="crm.stage_lead4">
-        <field name="name">Activation</field>
-        <field name="is_won">True</field>
+        <field name="name">Control desk</field>
         <field name="sequence">4</field>
+        <field name="is_won">False</field>
     </record>
     <record model="crm.stage" id="stage_lead5">
-        <field name="name">Emission of accounting events</field>
+        <field name="name">Activation</field>
+        <field name="is_won">True</field>
         <field name="sequence">5</field>
-    </record>
-    <record model="crm.stage" id="stage_lead6">
-        <field name="name">Collection</field>
-        <field name="sequence">6</field>
-    </record>
-    <record model="crm.stage" id="stage_lead7">
-        <field name="name">Legal-Judgment</field>
-        <field name="sequence">7</field>
     </record>
 </odoo>

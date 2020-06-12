@@ -18,6 +18,10 @@
                 <attribute name="invisible">1</attribute>
                 <attribute name="autofocus"></attribute>
             </xpath>
+            <xpath expr="//field[@name='sale_order_template_id']" position="attributes">     
+                <attribute name="invisible">1</attribute>
+                <attribute name="autofocus"></attribute>
+            </xpath>
             <xpath expr="//button[@name='action_quotation_send']" position="before">
                 <field name="send_email" invisible="1"/>
                 <field name="calculate" invisible="1"/>
@@ -62,6 +66,8 @@
                 <field name="tax_amount" attrs="{'invisible':[('hide', '=', True)]}" readonly="1" force_save="1"/>
                 <field name="payment_amount" attrs="{'invisible':[('hide', '=', True)]}" readonly="1" force_save="1"/>
                 <field name="total_payment" readonly="1" force_save="1"/>
+                <field name="fondeador" attrs="{'invisible':[('hide', '=', True)]}"/>
+                <field name="description" attrs="{'invisible':[('hide', '=', True)]}"/>
                 <br/>
                 <br/>
                 <h2 attrs="{'invisible':[('hide', '=', True)]}">Financial Conditions</h2>
@@ -100,52 +106,27 @@
                 <field name="hidepo" invisible="1"/>
                 <field name="hidevr" invisible="1"/>
                 <field name="bir" invisible="1"/>
+                <field name="cs" invisible="1"/><field name="af" invisible="1"/><field name="ap" invisible="1"/>
             </field>
             <xpath expr="//page[@name='customer_signature']" position="after">
-                <page string="Amortization Table" name="amortization_table_cs" attrs="{'invisible':[('hide', '=', False)]}">
-                    <field name="amortization_cs_ids" options="{'no_open': True}" readonly="1" force_save="1">
+                <page string="Amotization" name="amotization">
+                    <field name="amortization_ids" options="{'no_open': True}" readonly="1" force_save="1">
                         <tree>
                             <field name="no_payment"/>
                             <field name="date_end"/>
                             <field name="initial_balance"/>
                             <field name="capital"/>
                             <field name="interest"/>
-                            <field name="iva_interest"/>
+                            <field name="iva_interest" attrs="{ 'column_invisible' : [('parent.ap', '=', True)]}"/>
                             <field name="payment"/>
-                        </tree>
-                    </field>
-                </page>
-                <page string="Amortization Table" name="amortization_table_af" attrs="{'invisible':[('hidepo', '=', True)]}">
-                    <field name="amortization_af_ids" options="{'no_open': True}" readonly="1" force_save="1">
-                        <tree>
-                            <field name="no_payment"/>
-                            <field name="date_end"/>
-                            <field name="initial_balance"/>
-                            <field name="capital"/>
-                            <field name="interest"/>
-                            <field name="payment"/>
-                            <field name="iva_interest"/>
-                            <field name="iva_capital"/>
-                            <field name="total_rent"/>
-                        </tree>
-                    </field>
-                </page>
-                <page string="Amortization Table" name="amortization_table_ap" attrs="{'invisible':[('hidevr', '=', True)]}">
-                    <field name="amortization_ap_ids" options="{'no_open': True}" readonly="1" force_save="1">
-                        <tree>
-                            <field name="no_payment"/>
-                            <field name="date_end"/>
-                            <field name="initial_balance"/>
-                            <field name="capital"/>
-                            <field name="interest"/>
-                            <field name="payment" />
-                            <field name="iva_rent"/>
-                            <field name="total_rent"/>
+                            <field name="iva_capital" attrs="{ 'column_invisible' : [('parent.af', '=', False)]}"/>
+                            <field name="iva_rent" attrs="{ 'column_invisible' : [('parent.ap', '=', False)]}"/>
+                            <field name="total_rent" attrs="{ 'column_invisible' : [('parent.cs', '=', True)]}"/>
                         </tree>
                     </field>
                 </page>
                 <page string="Commision" name="commision" attrs="{'invisible':[('hide', '=', True)]}">
-                    <field name="commision_ids" readonly="1" force_save="1">
+                    <field name="commision_ids">
                         <tree>
                             <field name="detali_commision"/>
                             <field name="type_commision"/>

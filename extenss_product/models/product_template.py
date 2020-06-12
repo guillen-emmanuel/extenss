@@ -34,6 +34,21 @@ class ExtenssProductBaseInterestRate(models.Model):
     shortcut = fields.Char(string='Abbreviation', translate=True)
     interest_rate_ids = fields.One2many('extenss.product.interest_rate_date','base_interest_rate_id',string=' ')
 
+    _sql_constraints = [
+        ('name_unique',
+        'UNIQUE(name,shortcut)',
+        "The Base Interest rate unique")
+    ]
+    
+    @api.constrains('name')
+    def _check_name_insensitive(self):
+        model_ids = self.search([('id', '!=', self.id)])
+        list_names = [x.name.upper() for x in model_ids if x.name]
+        if self.name.upper() in list_names:
+            raise Warning(
+                "Ya existe un registro con el nombre: %s " % (self.name.upper())
+            )
+
 class ExtenssProductTypeDocs(models.Model):
     _name = 'extenss.product.type_docs'
     _order = 'name'

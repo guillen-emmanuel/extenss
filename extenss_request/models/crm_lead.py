@@ -1,4 +1,5 @@
 from odoo import fields, models, exceptions, api, _
+from datetime import datetime, date
 from odoo.exceptions import Warning, UserError, ValidationError
 
 class ExtenssRequestDestination(models.Model):
@@ -118,12 +119,166 @@ class Lead(models.Model):
         self.send_crm = 'Sending'
         self.user_send_req = self.env.user.id
         self.stage_id = 2
+        
+    def action_approved_sale(self):
+        self.user_send_req = self.env.user.id
+        if self.stage_id.id == 4:
+            self.action_duplicate()
+            self.stage_id = 5
+        if self.stage_id.id == 3:
+            self.stage_id = 4
 
-    def action_activation(self):
-        self.stage_id = 4  
+    def action_rejected_sale(self):
+        self.user_refuse_req = self.env.user.id
+        self.active = False
+    
+    def action_send_activation(self):
+        if self.stage_id == 3:
+            request_ids = self.env['sign.request.item'].search([('partner_id', '=', self.partner_id.id)]).mapped('sign_request_id')
+            for ref in request_ids:
+                doc_name=ref.reference[-10:-4]
+                if doc_name == quotations.name :
+                    if ref.state != 'signed' :
+                        raise ValidationError(_('unsigned document %s' % ref.reference))
+                    self.stage_id =  4
+    
+    def action_duplicate(self):
+        rec_accnt = self.env['extenss.credit.account']
+        exist_rec = rec_accnt.search([('customer_id', '=', self.partner_id.id)])
+        if not exist_rec:
+            print("Entra al metodo")
+            rec_accnt.create({
+                'customer_id': self.partner_id.id,
+                'date_opening': datetime.now().date(),
+                'status': 'active',
+                'balance': 0,
+            })
 
+        record_new = self.env['extenss.credit']
+        quotations_sale = self.env['sale.order'].search([('opportunity_id', '=', self.id),('state', '=', 'sale')])
+        for rec_sale in quotations_sale:
+            di = rec_sale.total_deposit/(1+(rec_sale.tax_id/100))
+            itd = di*(rec_sale.tax_id/100)
+            gd = rec_sale.total_guarantee/(1+(rec_sale.tax_id/100))
+            gdv = gd*(rec_sale.tax_id/100)
+
+            commision_rec = self.env['extenss.request.commision']
+            com_rec_porc = commision_rec.search([('sale_order_id', '=', rec_sale.id),('type_commision', '=', '0')])
+            com_rec_amount = commision_rec.search([('sale_order_id', '=', rec_sale.id),('type_commision', '=', '1')])
+            percent_rec_p = 0
+            amount_rec_p = 0
+            amount_rec_am = 0
+            amount_rec_val = 0
+            brv = 0
+            for rec_porc in com_rec_porc:
+                percent_rec_p += rec_porc.commision
+                amount_rec_p += rec_porc.value_commision
+
+            for rec_amount in com_rec_amount:
+                amount_rec_am += rec_amount.commision
+                amount_rec_val += rec_amount.value_commision
+
+            ca = amount_rec_p/(1+(rec_sale.tax_id/100))
+            cv = ca*(rec_sale.tax_id/100)
+
+            ratif = amount_rec_val/(1+(rec_sale.tax_id/100))
+            ratif_v = ratif*(rec_sale.tax_id/100)
+
+            reg_accnt = rec_accnt.search([('customer_id', '=', self.partner_id.id)])
+            for r in reg_accnt:
+                id_cuenta = r.id
+
+            if rec_sale.base_interest_rate == 'TIIE':
+                base_rate_id = self.env['extenss.product.base_interest_rate'].search([('name', '=', rec_sale.base_interest_rate)])
+                records_ird = self.env['extenss.product.interest_rate_date'].search([('base_interest_rate_id', '=', base_rate_id.id)])
+                for reg in records_ird:
+                    if datetime.now().date() == reg.date:
+                        reg.interest_rate
+                        brv = reg.interest_rate
+                rt = 'Variable'
+            else:
+                rt = 'Fixed'
+
+            itp = rec_sale.total_guarantee + rec_sale.total_deposit + amount_rec_val + amount_rec_p
+
+            record_new.create({
+                'customer_id': self.partner_id.id,
+                'request_id': self.id,
+                'product_id': rec_sale.product_id.product_tmpl_id.id,#product_id.id,
+                'salesperson_id': self.user_id.id,
+                'office_id': self.team_id.id,
+                'anchor_id': rec_sale.fondeador.name,
+                'bill_id': id_cuenta,
+                'customer_type': self.partner_type,
+                'amount_financed': self.planned_revenue,
+                'term': rec_sale.term,
+                'frequency': rec_sale.frequency_id.id,
+                'vat_factor': rec_sale.tax_id,
+                'rate_type': rt,
+                'base_rate_type': rec_sale.base_interest_rate,
+                'base_rate_value': brv,
+                'differential': rec_sale.point_base_interest_rate,
+                'interest_rate': rec_sale.interest_rate_value,
+                'type_credit': rec_sale.credit_type.id,
+                'hiring_date': rec_sale.date_start,
+                'first_payment_date': rec_sale.date_first_payment,
+                'purchase_option': rec_sale.purchase_option,
+                'purchase_option_amount': rec_sale.purchase_option2,
+                'order_id': rec_sale.id,
+                'residual_value': rec_sale.residual_porcentage,
+                'amount_residual_value': rec_sale.residual_value,
+                'total_deposit_income': rec_sale.total_deposit,
+                'deposit_income': di,
+                'income_tax_deposit': itd,
+                'percentage_guarantee_deposit': rec_sale.guarantee_percentage,
+                'guarantee_deposit': gd,
+                'vat_guarantee_deposit': gdv,
+                'total_guarantee_deposit': rec_sale.total_guarantee,
+                'portfolio_type': 'vigente',
+                'credit_status': 'active',
+                'percentage_commission': percent_rec_p,
+                'commission_amount': ca,
+                'commission_vat': cv,
+                'total_commission': amount_rec_p,
+                'ratification': ratif,
+                'ratification_vat': ratif_v,
+                'total_ratification': amount_rec_val,
+                'initial_total_payment': itp,
+                'cs': rec_sale.cs,
+                'af': rec_sale.af,
+                'ap': rec_sale.ap,
+                'leased_team': rec_sale.description,
+                'amount_si': rec_sale.amount_si,
+                'tax_amount': rec_sale.tax_amount,
+                'date_limit_pay': rec_sale.date_limit_pay
+            })
+            
+            for amort in rec_sale.amortization_ids:
+                amortization_ids = [(4, 0, 0)]
+                data = {
+                    'no_pay': amort.no_payment,
+                    'expiration_date': amort.date_end,
+                    'initial_balance': amort.initial_balance,
+                    'capital': amort.capital,
+                    'interest': amort.interest,
+                    'iva_interest': amort.iva_interest,
+                    'payment': amort.payment, 
+                    'iva_capital': amort.iva_capital,
+                    'total_rent': amort.total_rent,
+                    'iva_rent': amort.iva_rent
+                }
+                amortization_ids.append((0, 0, data))
+                record_ids = self.env['extenss.credit'].search([('order_id', '=', rec_sale.id)])
+                for record in record_ids:
+                    record.write({
+                        'amortization_ids': amortization_ids
+                    })
     def validations(self):
-        docs = self.env['documents.document'].search([('lead_id', '=', self.id)])
+        if self.partner_type == 'person':
+            docs = self.env['documents.document'].search([('lead_id', '=', self.id)])
+        else:
+            docs = self.env['documents.document'].search([('partner_id', '=', self.partner_id.id)])
+            
         for reg_docs in docs:
             if not reg_docs.attachment_id:
                 raise ValidationError(_('Attach the corresponding documents'))

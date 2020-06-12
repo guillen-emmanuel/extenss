@@ -1,0 +1,18 @@
+{
+    'name': 'Credit',
+    'version': '1.0',
+    'summary': 'Definition of the Financial Credit',
+    'description': 'Definition of the Financial Credit',
+    'author': 'Mastermind Software Services',
+    'depends': ['base'],
+    'application': True,
+    'website': 'https://www.mss.mx',
+    'category': 'Uncategorized',
+    'data': ['data/ir_sequence_data.xml',
+             'security/extenss_credit_security.xml',
+             'security/ir.model.access.csv',
+             'views/credit_menu.xml',
+             'views/credit_view.xml',
+             'reports/account_status.xml',
+             'reports/report.xml'],
+}

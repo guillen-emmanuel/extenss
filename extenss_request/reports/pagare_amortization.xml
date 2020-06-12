@@ -32,7 +32,7 @@
                 pagos parciales consecutivos e ininterrumpidos, cada uno por el importe de $ __<t t-esc="'{0:,.2f}'.format(round(float((doc.total_payment)), 2))"/>__ (_______________________
                 __________________________________________________ pesos _____/100 M.N.), pagaderos los días ___<t t-esc="doc.date_start.day"/>___
                 ____________________________ de cada ____<t t-esc="doc.term"/>_______, comenzando en el mes de __<t t-esc="doc.date_start.month"/>__del año _<t t-esc="doc.date_start.year"/>_ 
-                y finalizando el mes de ___<t t-esc="doc.date_limit_pay.month"/>__del año _<t t-esc="doc.date_limit_pay.year"/>_.</p>
+                y finalizando el mes de ___<t t-esc="doc.date_start.month"/>__del año _<t t-esc="doc.date_start.year"/>_.</p>
                 </div>
                 <br></br>
                 <br></br>

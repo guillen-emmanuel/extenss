@@ -22,9 +22,10 @@ class SaleOrder(models.Model):
             if quotation.amount < quotation.min_amount or quotation.amount > quotation.max_amount:
                 raise Warning('The Request Amount must be older than Min Amount and less than Max Amount %s' % quotation.name)
             if quotation.credit_type.shortcut == 'AF' or quotation.credit_type.shortcut == 'AP':
-                if quotation.credit_type.shortcut == 'AF':
-                    if not quotation.guarantee_percentage:
-                        raise Warning('Please provide a Guarantee Porcentage for %s' % quotation.name)
+                if not quotation.fondeador:
+                    raise Warning('Please provide a Fondeador %s' % quotation.name)
+                if not quotation.description:
+                    raise Warning('Please provide a Description %s' % quotation.name)
                 if not quotation.purchase_option:
                     raise Warning('Please provide a Purchase Option Porcentage for %s' % quotation.name)
                 if quotation.credit_type.shortcut == 'AP':
@@ -96,13 +97,10 @@ class SaleOrder(models.Model):
                 if quotation.frequency_id.days == 7:
                     dm=7
                     rate=dr/100*7
-            amortization_cs_ids = [(5, 0, 0)]
-            amortization_af_ids = [(5, 0, 0)]
-            amortization_ap_ids = [(5, 0, 0)]
+            amortization_ids = [(5, 0, 0)]
+        
+            quotation.amortization_ids = amortization_ids
             
-            quotation.amortization_cs_ids = amortization_cs_ids
-            quotation.amortization_af_ids = amortization_af_ids
-            quotation.amortization_ap_ids = amortization_ap_ids
             if quotation.credit_type.shortcut == 'AF' or quotation.credit_type.shortcut == 'AP':
                 quotation.amount_si=quotation.amount/(1+(quotation.tax_id/100))
                 ra=quotation.amount_si
@@ -110,8 +108,8 @@ class SaleOrder(models.Model):
                 if quotation.credit_type.shortcut == 'AP':
                     quotation.residual_value=ra*quotation.residual_porcentage/100
                 if quotation.credit_type.shortcut == 'AF':
-                    quotation.iva=ra*quotation.guarantee_percentage/100
-                    quotation.total_guarantee=quotation.iva
+                    quotation.iva=ra*quotation.tax_id/100
+                    quotation.total_guarantee=ra*quotation.guarantee_percentage/100
                 quotation.iva_purchase=quotation.purchase_option2*(quotation.tax_id/100)
                 quotation.total_purchase=quotation.purchase_option2+quotation.iva_purchase
                 quotation.total_commision=0
@@ -171,64 +169,30 @@ class SaleOrder(models.Model):
                 if quotation.credit_type.shortcut == 'AP':
                     ivarent=pay*(quotation.tax_id/100)
                     totalrent=pay+ivarent
-                if quotation.credit_type.shortcut == 'AF':
-                    amortization_af_ids = [(4, 0, 0)]
-                    #data = self._compute_line_data_for_template_change(line)
-                    data = {
-                        'id': '1',
-                        'no_payment': (i+1),
-                        'date_end': df,
-                        'initial_balance': ra,
-                        'capital': capital,
-                        'interest': interest,
-                        'payment': pay,
-                        'iva_interest': ivainterest,
-                        'iva_capital': ivacapital,
-                        'total_rent': totalrent,    
-                    }
-                    amortization_af_ids.append((0, 0, data))
-                    self.amortization_af_ids = amortization_af_ids
-                if quotation.credit_type.shortcut == 'AP':
-                    amortization_ap_ids = [(4, 0, 0)]
-                    #data = self._compute_line_data_for_template_change(line)
-                    data = {
-                        'id': '1',
-                        'no_payment': (i+1),
-                        'date_end': df,
-                        'initial_balance': ra,
-                        'capital': capital,
-                        'interest': interest,
-                        'payment': pay,
-                        'iva_rent': ivarent,
-                        'total_rent': totalrent,    
-                    }
-                    amortization_ap_ids.append((0, 0, data))
-                    self.amortization_ap_ids = amortization_ap_ids
-                if quotation.credit_type.shortcut == 'CS':
-                    amortization_cs_ids = [(4, 0, 0)]
-                    #data = self._compute_line_data_for_template_change(line)
-                    data = {
-                        'id': '1',
-                        'no_payment': (i+1),
-                        'date_end': df,
-                        'initial_balance': ra,
-                        'capital': capital,
-                        'interest': interest,
-                        'iva_interest': ivainterest,
-                        'payment': pay, 
-                    }
-                    amortization_cs_ids.append((0, 0, data))
-                    self.amortization_cs_ids = amortization_cs_ids
+                
+                amortization_cs_ids = [(4, 0, 0)]
+                data = {
+                    'no_payment': (i+1),
+                    'date_end': df,
+                    'initial_balance': ra,
+                    'capital': capital,
+                    'interest': interest,
+                    'iva_interest': ivainterest,
+                    'payment': pay,
+                    'iva_rent': ivarent,
+                    'total_rent': totalrent,
+                    'iva_capital': ivacapital
+                }
+                amortization_ids.append((0, 0, data))
+                self.amortization_ids = amortization_ids
                 self.send_email=False
                 self.calculate=True
                 self.amount_untaxed =0.0
                 self.amount_untaxed = self.amount
                 self.amount_total = self.amount
-                
                 ra=fb
                 di=df 
                 self.date_limit_pay=df
-
                 if i == 0 :
                     quotation.date_first_payment=df
                     if quotation.credit_type.shortcut == 'AF' or quotation.credit_type.shortcut == 'AP':
@@ -315,14 +279,12 @@ class SaleOrder(models.Model):
             namedoc = self.env['extenss.product.type_docs'].search([('id', '=', reg_type_or.catalogo_docs.id)])
             for reg_or in namedoc:
                 docs_self.append(reg_or.id)
-                print(docs_self)
 
         orders = self.env['sale.order'].search([('opportunity_id.id', '=', self.opportunity_id.id),('state', '=', 'sale'),('id', '!=', self.id)])
         for reg_ords in orders:
             namedocs_ord = self.env['extenss.product.cat_docs'].search([('doc_id', '=', reg_ords.product_id.product_tmpl_id.id)])
             for regdocs_ord in namedocs_ord:
                 namedoc_or = self.env['extenss.product.type_docs'].search([('id', '=', regdocs_ord.catalogo_docs.id)])
-                print(namedoc_or.id)
                 docs_ord.append(namedoc_or.id)
 
         for record in docs_self:
@@ -363,18 +325,10 @@ class SaleOrder(models.Model):
     base_interest_rate = fields.Char('Base Interest Rate')
     point_base_interest_rate = fields.Float('P. Base Int. Rate', (2,6), translate=True)
     tax_id = fields.Float('Tax Rate', (2,6))
-    amortization_cs_ids = fields.One2many(
-        'extenss.request.amortization_cs', 
+    amortization_ids = fields.One2many(
+        'extenss.request.amortization', 
         'sale_order_id', 
-        string='Amortization Table',)
-    amortization_af_ids = fields.One2many(
-        'extenss.request.amortization_af', 
-        'sale_order_id', 
-        string='Amortization Table',)
-    amortization_ap_ids = fields.One2many(
-        'extenss.request.amortization_ap', 
-        'sale_order_id', 
-        string='Amortization Table',)
+        string='Amortization Table')
     
     company_currency = fields.Many2one(string='Currency', related='company_id.currency_id', readonly=True, relation="res.currency")
     company_id = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.company.id)
@@ -397,6 +351,9 @@ class SaleOrder(models.Model):
     hidepo = fields.Boolean(string="Hide")
     hidevr = fields.Boolean(string="Hide")
     bir = fields.Boolean(string="Hide")
+    cs = fields.Boolean(String='CS')
+    af = fields.Boolean(String='AF')
+    ap = fields.Boolean(String='AP')
     iva = fields.Monetary('IVA',  currency_field='company_currency', tracking=True)
     purchase_option = fields.Float('Purchase Option Porcentage', (2,6))
     purchase_option2 = fields.Monetary('Purchase Option Value', currency_field='company_currency', tracking=True)
@@ -408,7 +365,8 @@ class SaleOrder(models.Model):
         'extenss.request.commision', 
         'sale_order_id', 
         string='Commision',)
-    stage_id = fields.Many2one('crm.stage', string='Stage', tracking=True, translate=True)
+    fondeador = fields.Many2one('extenss.request.fondeador')
+    description = fields.Char('Description')
     #opportunity_id = fields.Many2one('crm.lead', string='Opportunity')
 
     #@api.depends('partner_id')
@@ -426,13 +384,8 @@ class SaleOrder(models.Model):
         monto = self.env['crm.lead'].search([('id', '=', self.opportunity_id.id)])
         for reg in monto:
             self.amount = reg.planned_revenue
-            self.stage_id=reg.stage_id.id
-        amortization_cs_ids = [(5, 0, 0)]
-        amortization_af_ids = [(5, 0, 0)]
-        amortization_ap_ids = [(5, 0, 0)]
-        self.amortization_cs_ids = amortization_cs_ids
-        self.amortization_af_ids = amortization_af_ids
-        self.amortization_ap_ids = amortization_ap_ids
+        amortization_ids = [(5, 0, 0)]
+        self.amortization_ids = amortization_ids
         valid_values = self.product_id.product_tmpl_id.valid_product_template_attribute_line_ids.product_template_value_ids
         
        # remove the is_custom values that don't belong to this template
@@ -471,6 +424,8 @@ class SaleOrder(models.Model):
         self.purchase_option2=0.0
         self.iva_purchase=0.0
         self.total_purchase=0.0
+        self.fondeador=0
+        self.description=''
 
 
         self.term = product.term_extra
@@ -487,10 +442,20 @@ class SaleOrder(models.Model):
         self.interest_rate_value=product.interest_rate_extra
         self.cat=product.cat_extra
         self.include_taxes=self.product_id.include_taxes
+        if self.credit_type.shortcut == 'AP':
+            self.ap = True
+        else:
+            self.ap = False
+        if self.credit_type.shortcut == 'AF':
+            self.af = True
+        else:
+            self.af = False
         if self.credit_type.shortcut == 'CS':
             self.hide = True
+            self.cs = True
         else:
             self.hide = False
+            self.cs = False
         if self.credit_type.shortcut == 'AP' or self.credit_type.shortcut == 'CS':
             self.hidepo = True
         else:
@@ -549,8 +514,8 @@ class SaleOrder(models.Model):
     #taxes_id = fields.Many2many('account.tax', 'product_taxes_rel', 'prod_id', 'tax_id', help="Default taxes used when selling the product.", string='Customer Taxes',
     #    domain=[('type_tax_use', '=', 'sale')], default=lambda self: self.env.company.account_sale_tax_id)
 
-class SaleOrderAmortizationCS(models.Model):
-    _name = "extenss.request.amortization_cs"
+class SaleOrderAmortization(models.Model):
+    _name = "extenss.request.amortization"
     _description = "Extenss Amortization Table CS"
 
     sale_order_id = fields.Many2one('sale.order')
@@ -561,42 +526,10 @@ class SaleOrderAmortizationCS(models.Model):
     interest = fields.Monetary('Interest', currency_field='company_currency', tracking=True)
     iva_interest = fields.Monetary('IVA Interest',currency_field='company_currency', tracking=True)
     payment = fields.Monetary('Payment',currency_field='company_currency', tracking=True)
-    
-    company_currency = fields.Many2one(string='Currency', related='company_id.currency_id', readonly=True, relation="res.currency")
-    company_id = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.company.id)
-
-class SaleOrderAmortizationAF(models.Model):
-    _name = "extenss.request.amortization_af"
-    _description = "Extenss Amortization Table AF"
-
-    sale_order_id = fields.Many2one('sale.order')
-    no_payment = fields.Integer('No.')
-    date_end = fields.Date('End Date')
-    initial_balance = fields.Monetary('Initial Balance',currency_field='company_currency', tracking=True)
-    capital = fields.Monetary('Capital',currency_field='company_currency', tracking=True)
-    interest = fields.Monetary('Interest', currency_field='company_currency', tracking=True)
-    payment = fields.Monetary('Monthly Rent',currency_field='company_currency', tracking=True)
-    iva_interest = fields.Monetary('IVA Interest',currency_field='company_currency', tracking=True)
     iva_capital = fields.Monetary('IVA Capital',currency_field='company_currency', tracking=True)
     total_rent = fields.Monetary('Total Rent',currency_field='company_currency', tracking=True)
-
-    company_currency = fields.Many2one(string='Currency', related='company_id.currency_id', readonly=True, relation="res.currency")
-    company_id = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.company.id)
-
-class SaleOrderAmortizationAP(models.Model):
-    _name = "extenss.request.amortization_ap"
-    _description = "Extenss Amortization Table AP"
-
-    sale_order_id = fields.Many2one('sale.order')
-    no_payment = fields.Integer('No.')
-    date_end = fields.Date('End Date')
-    initial_balance = fields.Monetary('Initial Balance',currency_field='company_currency', tracking=True)
-    capital = fields.Monetary('Capital',currency_field='company_currency', tracking=True)
-    interest = fields.Monetary('Interest', currency_field='company_currency', tracking=True)
-    payment = fields.Monetary('Monthly Rent',currency_field='company_currency', tracking=True)
     iva_rent = fields.Monetary('IVA Rent',currency_field='company_currency', tracking=True)
-    total_rent = fields.Monetary('Total Rent',currency_field='company_currency', tracking=True)
-    
+
     company_currency = fields.Many2one(string='Currency', related='company_id.currency_id', readonly=True, relation="res.currency")
     company_id = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.company.id)
 
@@ -632,3 +565,16 @@ class SaleOrderCommision(models.Model):
                 raise Warning('Please provide a Type Commision ')
             if not com.commision:
                 raise Warning('Please provide a Commision ')
+class ExtenssRequestFondeador(models.Model):
+    _name = 'extenss.request.fondeador'
+    _order = 'name'
+    _description = 'Fondeador'
+
+    name = fields.Char(string='Fondeador',  translate=True)
+    shortcut = fields.Char(string='Abbreviation', translate=True)
+
+    _sql_constraints = [
+        ('name_unique',
+        'UNIQUE(id,name)',
+        "The Fondeador name must be unique"),
+    ]
