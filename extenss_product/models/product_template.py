@@ -153,6 +153,7 @@ class Product(models.Model):
     calculation_base = fields.Many2one('extenss.product.calculation_base')
     base_interest_rate = fields.Many2one('extenss.product.base_interest_rate')
     point_base_interest_rate = fields.Float('P. of Base Interest Rate', (2,6), translate=True)
+    rate_arrears_interest = fields.Float('Factor', (2,1), tracking=True, translate=True)
     include_taxes = fields.Boolean('Include Taxes', default=False,  translate=True)
     min_age = fields.Integer('Min. Age', translate=True)
     max_age = fields.Integer('Max. Age',  translate=True)

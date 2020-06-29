@@ -4,8 +4,17 @@
         <field name="name">Credit Form</field>
         <field name="model">extenss.credit</field>
         <field name="arch" type="xml">
-            <form>
+            <form ><!--create="false" edit="false"-->
+                <header>
+                    <button name="action_new_request" string="Request" type="object" class="oe_highlight"/>
+                </header>
                 <sheet>
+                    <div name="button_box" class="oe_button_box">
+                        <button class="oe_stat_button" type="object" name="open_request_count" icon="fa-bars">
+                            <field name="request_count" string="Request" widget="statinfo"/>
+                        </button>
+                    </div>
+
                     <group>
                         <div class="oe_title">
                             <div class="oe_edit_only">
@@ -16,18 +25,17 @@
                     </group>
                     <group name="group_top">
                         <group name="group_left">
-                            <field name="customer_id"/>
-                            <field name="request_id"/>
-                            <field name="product_id"/>
-                            <field name="salesperson_id"/>
-                            <field name="office_id"/>
+                            <field name="customer_id" options="{'no_open': True}"/>
+                            <field name="request_id" options="{'no_open': True}"/>
+                            <field name="product_id" options="{'no_open': True}"/>
+                            <field name="salesperson_id" options="{'no_open': True}"/>
+                            <field name="office_id" options="{'no_open': True}"/>
                             <field name="anchor_id"/>
                             <field name="bill_id"/>
                             <field name="customer_type"/>
-                            <!--<field name="customer_name"/>-->
                             <field name="amount_financed"/>
                             <field name="term"/>
-                            <field name="frequency"/>
+                            <field name="frequency" options="{'no_open': True}"/>
                             <label for="vat_factor"/>
                             <div id="vat_factor" >
                                 <field name="vat_factor" widget="float" class="oe_inline"/>
@@ -46,13 +54,20 @@
                                 <field name="interest_rate" widget="float" class="oe_inline"/>
                                 <span class="oe_grey"> %%</span>
                             </div>
-                            <label for="default_factors"/>
+                            <field name="rate_arrears_interest"/>
+                            <label for="factor_rate"/>
+                            <div id="factor_rate" >
+                                <field name="factor_rate" widget="float" class="oe_inline"/>
+                                <span class="oe_grey"> %%</span>
+                            </div>
+                            <!-- <label for="default_factors"/>
                             <div id="default_factors" >
                                 <field name="default_factors" widget="float" class="oe_inline"/>
                                 <span class="oe_grey"> %%</span>
-                            </div>
+                            </div> -->
                             <field name="days_notice"/>
-                            <field name="type_credit"/>
+                            <field name="type_credit" options="{'no_open': True}"/>
+                            <field name="calculation_base"/>
                             <field name="hiring_date"/>
                             <field name="first_payment_date"/>
                             <field name="dispersion_date"/>
@@ -110,10 +125,26 @@
                             <field name="total_ratification" attrs="{ 'invisible' : [('cs', '=', True)]}"/>
                             <field name="initial_total_payment" attrs="{ 'invisible' : [('cs', '=', True)]}"/>
                             <field name="account_status_date"/>
+                            <field name="flag_early_settlement"/>
+                            <field name="notice_date"/>
+                            <field name="payment_date"/>
                             <field name="cs" invisible="1"/><field name="af" invisible="1"/><field name="ap" invisible="1"/>
                         </group>
                     </group>
                     <notebook>
+                        <page string="Moras" name="moras">
+                            <field name="moras_ids">
+                                <tree>
+                                    <field name="init_date"/>
+                                    <field name="end_date"/>
+                                    <field name="days"/>
+                                    <field name="past_due_balance"/>
+                                    <field name="rate"/>
+                                    <field name="interest"/>
+                                    <field name="amount_to_payment"/>
+                                </tree>
+                            </field>
+                        </page>
                         <page string="Amotization" name="amotization">
                             <field name="amortization_ids" options="{'no_open': True}" readonly="1" force_save="1">
                                 <tree>
@@ -131,10 +162,10 @@
                             </field>
                         </page>
                         <page string="Expiry notices" name="expiry_notices">
-                            <field name="credit_expiry_ids">
+                            <field name="credit_expiry_ids" ><!--readonly="1"-->
                                 <tree>
+                                    <field name="expiry_number"/>
                                     <field name="payment_number"/>
-                                    <field name="expiry_not_number"/>
                                     <field name="due_not_date"/>
                                     <field name="amount_not"/>
                                     <field name="total_paid_not"/>
@@ -143,54 +174,58 @@
                                 <form>
                                     <sheet>
                                         <group>
-                                            <field name="payment_number"/>
-                                            <field name="expiry_not_number"/>
-                                            <field name="due_not_date"/>
-                                            <field name="amount_not"/>
-                                            <field name="total_paid_not"/>
-                                            <field name="total_to_pay"/>
+                                            <group>
+                                                <field name="expiry_number"/>
+                                                <field name="payment_number"/>
+                                                <field name="due_not_date"/>
+                                                <field name="payment_date"/>
+                                            </group>
+                                            <group>
+                                                <field name="amount_not"/>
+                                                <field name="total_paid_not"/>
+                                                <field name="total_to_pay"/>
+                                            </group>
                                         </group>
-                                    </sheet>
-                                    <sheet>
                                         <group>
                                             <notebook>
-                                                <page name="movements" string="Account movements">
+                                                <page name="concepts_expiration" string="Concepts Expiration Notices">
                                                     <field name="expiry_notice_ids">
                                                         <tree>
-                                                            <field name="name"/>
-                                                            <field name="expiry_not_number_concept"/>
-                                                            <field name="amount_concept"/>
                                                             <field name="concept"/>
+                                                            <!-- <field name="expiry_num"/> -->
+                                                            <field name="amount_concept"/>
                                                             <field name="total_paid_concept"/>
                                                             <field name="full_paid"/>
                                                         </tree>
                                                         <form>
                                                             <group>
-                                                                <field name="name"/>
-                                                                <field name="expiry_not_number_concept"/>
-                                                                <field name="amount_concept"/>
+                                                                <group>
+                                                                    <field name="concept" />
+                                                                    <field name="amount_concept"/>
+                                                                </group>
+                                                                <group>
+                                                                    <field name="total_paid_concept"/>
+                                                                    <field name="full_paid"/>
+                                                                </group>
                                                             </group>
                                                             <group>
-                                                                <field name="concept"/>
-                                                                <field name="total_paid_concept"/>
-                                                                <field name="full_paid"/>
-                                                            </group>
-                                                            <group string="Concept Payment Information">
-                                                                <field name="concept_pay_ids">
-                                                                    <tree>
-                                                                        <field name="pay_id"/>
-                                                                        <field name="expiry_not_number_cp"/>
-                                                                        <field name="concept_id_cp"/>
+                                                                <field name="concept_pay_ids" string="Payments" options="{'no_create_edit': False},
+                                                                {'no_quick_create': False},
+                                                                {'no_open': False}">
+                                                                    <tree open="false"><!--create="1" edit="1">-->
+                                                                        <field name="expiry_number_en"/>
                                                                         <field name="date_paid"/>
                                                                         <field name="total_paid_cp"/>
                                                                     </tree>
                                                                     <form>
                                                                         <group>
-                                                                            <field name="pay_id"/>
-                                                                            <field name="expiry_not_number_cp"/>
-                                                                            <field name="concept_id_cp"/>
-                                                                            <field name="date_paid"/>
-                                                                            <field name="total_paid_cp"/>
+                                                                            <group>
+                                                                                <field name="expiry_number_en"/>
+                                                                                <field name="date_paid"/>
+                                                                            </group>
+                                                                            <group>
+                                                                                <field name="total_paid_cp"/>
+                                                                            </group>
                                                                         </group>
                                                                     </form>
                                                                 </field>
@@ -214,7 +249,7 @@
         <field name="name">extenss.credit.tree</field>
         <field name="model">extenss.credit</field>
         <field name="arch" type="xml">
-            <tree create="false" edit="false">
+            <tree ><!--create="false" edit="false"-->
                 <field name="credit_id"/>
                 <field name="customer_id"/>
                 <field name="request_id"/>
@@ -238,12 +273,24 @@
         <field name="model">extenss.credit</field>
         <field name="arch" type="xml">
             <search>
+                <field name="credit_id"/>
                 <field name="customer_id"/>
+                <field name="request_id"/>
                 <field name="product_id"/>
+                <field name="salesperson_id"/>
+                <field name="office_id"/>
+                <field name="anchor_id"/>
+                <field name="bill_id"/>
+                <field name="customer_type"/>
+                <field name="amount_financed"/>
+                <field name="type_credit"/>
+                <field name="frequency"/>
+                <field name="interest_rate"/>
+                <field name="term"/>
                 <separator/>
-                <filter name="filter_customer" string="Customer" domain="[('customer_id','ilike', self)]"/>
+                <!--<filter name="filter_customer" string="Customer" domain="[('customer_id','ilike', self)]"/>-->
                 <separator/>
-                <filter name="filter_product" string="Product" domain="[('product_id','ilike', self)]"/>
+                <!--<filter name="filter_product" string="Product" domain="[('product_id','ilike', self)]"/>-->
                 <!-- <filter name="filter_inactive" string="Inactive" domain="[('active','=',True)]"/>
                 <filter name="filter_active" string="Active" domain="[('active','=',False)]"/> -->
             </search>
@@ -269,16 +316,21 @@
         <field name="model">extenss.credit.account</field>
         <field name="arch" type="xml">
             <form create="false" edit="false">
+                <header>
+                    <button name="%(extenss_credit.create_movement_wizard)d" string="Create Credit/Charge" type="action" class="oe_highlight"/>
+                </header>
                 <sheet>
                     <group>
-                        <field name="name"/>
-                        <field name="customer_id"/>
-                        <field name="date_opening"/>
-                        <field name="status"/>
-                        <field name="balance"/>
+                        <group>
+                            <field name="name"/>
+                            <field name="customer_id" options="{'no_open': True}"/>
+                            <field name="date_opening"/>
+                        </group>
+                        <group>
+                            <field name="status"/>
+                            <field name="balance"/>
+                        </group>
                     </group>
-                </sheet>
-                <sheet>
                     <group>
                         <notebook>
                             <page name="movements" string="Account movements">
@@ -286,17 +338,23 @@
                                     <tree>
                                         <field name="date_time_move"/>
                                         <field name="movement_type"/>
+                                        <field name="comments"/>
                                         <field name="amount"/>
                                         <field name="initial_balance"/>
                                         <field name="ending_balance"/>
                                     </tree>
                                     <form>
                                         <group>
-                                            <field name="date_time_move"/>
-                                            <field name="movement_type"/>
-                                            <field name="amount"/>
-                                            <field name="initial_balance"/>
-                                            <field name="ending_balance"/>
+                                            <group>
+                                                <field name="date_time_move"/>
+                                                <field name="movement_type"/>
+                                                <field name="comments"/>
+                                            </group>
+                                            <group>
+                                                <field name="amount"/>
+                                                <field name="initial_balance"/>
+                                                <field name="ending_balance"/>
+                                            </group>
                                         </group>
                                     </form>
                                 </field>
@@ -308,11 +366,89 @@
         </field>
     </record>
 
+    <record id="view_extenss_credit_account_search" model="ir.ui.view">
+        <field name="name">extenss.credit_account.filters</field>
+        <field name="model">extenss.credit.account</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="customer_id"/>
+                <field name="date_opening"/>
+                <field name="status"/>
+                <field name="balance"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_form_extenss_credit_request" model="ir.ui.view">
+        <field name="name">credit.request.form</field>
+        <field name="model">extenss.credit.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,pending,applied"/>
+                    <button name="action_calculate_request" string="Calculate" type="object" class="oe_highlight" attrs="{'invisible' : [('state', '!=', 'draft')]}"/>
+                    <button name="action_confirm_request" string="Confirm" type="object" class="oe_highlight" attrs="{'invisible' : [('state', '!=', 'draft')]}"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="credit_request_id" context="{'default_credit_request_id':id}" invisible="1"/>
+                        <field name="type_request" attrs="{'readonly' : [('state', '!=', 'draft')]}"/>
+                        <field name="date_settlement" attrs="{'readonly' : [('state', '!=', 'draft')]}"/>
+                        <field name="penalty" attrs="{'readonly' : [('state', '!=', 'draft')]}"/>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="outstanding_balance" readonly="1"/>
+                            <field name="overdue_balance" readonly="1"/>
+                            <field name="days_interest" readonly="1"/>
+                            <field name="interests" readonly="1"/>
+                            <field name="interests_moratoriums" readonly="1"/>
+                            <field name="vat_interest_mora" readonly="1"/>
+                            <field name="capital_vat" readonly="1"/>
+                            <field name="interests_vat" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="penalty_amount" readonly="1"/>
+                            <field name="purchase_option" readonly="1"/>
+                            <field name="vat_purchase_option" readonly="1"/>
+                            <field name="security_deposit_balance" readonly="1"/>
+                            <field name="balance_income_deposit" readonly="1"/>
+                            <field name="total_settle" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_tree_extenss_credit_request" model="ir.ui.view">
+        <field name="name">credit.request.tree</field>
+        <field name="model">extenss.credit.request</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="date_settlement"/>
+                <field name="type_request"/>
+            </tree>
+        </field>
+    </record>
+
     <record id="action_menu_account" model="ir.actions.act_window">
         <field name="name">Account</field>
         <field name="res_model">extenss.credit.account</field>
         <field name="type">ir.actions.act_window</field>
         <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_menu_request" model="ir.actions.act_window">
+        <field name="name">Request</field>
+        <field name="res_model">extenss.credit.request</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form,tree</field>
+        <field name="domain">[('credit_request_id', '=', active_id)]</field>
+        <field name="context">{'search_default_credit_request_id': active_id, 'default_credit_request_id': active_id}</field>
     </record>
 
     <menuitem
@@ -321,4 +457,11 @@
         parent="extenss_credit.menu_credit"
         name="Account"
         sequence="20"/>
+<!--     
+    <menuitem 
+        action="action_menu_request"
+        id="menu_request"
+        parent="extenss_credit.menu_credit"
+        name="Request"
+        sequence="30"/> -->
 </odoo>

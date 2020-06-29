@@ -46,6 +46,12 @@
                     <span class="oe_grey"> %%</span>
                 </div>
                 <field name="term" readonly="1" force_save="1"/>
+                <field name="rate_arrears_interest" readonly="1" force_save="1"/>
+                <label for="factor_rate" readonly="1" force_save="1"/>
+                <div id="factor_rate">
+                    <field name="factor_rate" widget="float" class="oe_inline" readonly="1" force_save="1"/>
+                    <span class="oe_grey"> %%</span>
+                </div>
                 <field name="min_age" readonly="1" force_save="1"/>
                 <field name="max_age" readonly="1" force_save="1"/>
                 <field name="min_amount" readonly="1" force_save="1"/>

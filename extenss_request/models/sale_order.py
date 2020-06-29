@@ -55,66 +55,84 @@ class SaleOrder(models.Model):
             #dpp=quotation.date_first_payment
             #diff=dpp-df
             if quotation.calculation_base=='360/360':
-                if quotation.include_taxes:
-                    dr=(quotation.interest_rate_value / 360 )
+                if quotation.credit_type.shortcut == 'AF' or quotation.credit_type.shortcut == 'AP':
+                    if quotation.include_taxes:
+                        dr=(quotation.interest_rate_value / 360 )/(1+(quotation.tax_id/100))
+                    else:
+                        dr=(quotation.interest_rate_value / 360 )
                 else:
-                    dr=(quotation.interest_rate_value / 360 * (1+(quotation.tax_id/100)))
+                    if quotation.include_taxes:
+                        dr=(quotation.interest_rate_value / 360 )
+                    else:
+                        dr=(quotation.interest_rate_value / 360 ) * (1+(quotation.tax_id/100))
                 if quotation.frequency_id.days == 30:
                     dm=30
-                    rate=dr/100*30
+                    rate=(dr/100*30)
                 if quotation.frequency_id.days == 15:
                     dm=15
-                    rate=dr/100*15
+                    rate=(dr/100*15)
                 if quotation.frequency_id.days == 7:
                     dm=7
-                    rate=dr/100*7
+                    rate=(dr/100*7,2)
             if quotation.calculation_base=='365/365':
-                if quotation.include_taxes:
-                    dr=(quotation.interest_rate_value / 365)
+                if quotation.credit_type.shortcut == 'AF' or quotation.credit_type.shortcut == 'AP':
+                    if quotation.include_taxes:
+                        dr=(quotation.interest_rate_value / 365 )/(1+(quotation.tax_id/100))
+                    else:
+                        dr=(quotation.interest_rate_value / 365 )
                 else:
-                    dr=(quotation.interest_rate_value / 365 * (1+(quotation.tax_id/100)))
+                    if quotation.include_taxes:
+                        dr=(quotation.interest_rate_value / 365 )
+                    else:
+                        dr=(quotation.interest_rate_value / 365 ) * (1+(quotation.tax_id/100))
                 if quotation.frequency_id.days == 30:
                     dm=calendar.monthrange(di.year,di.month)[1]
-                    rate=dr/100*30.5
+                    rate=(dr/100*30.5)
                 if quotation.frequency_id.days == 15:
                     dm=15
-                    rate=dr/100*15.25
+                    rate=(dr/100*15.25)
                 if quotation.frequency_id.days == 7:
                     dm=7
-                    rate=dr/100*7
+                    rate=(dr/100*7)
                 
             if quotation.calculation_base=='360/365':
-                if quotation.include_taxes:
-                    dr=(quotation.interest_rate_value / 360 )
+                if quotation.credit_type.shortcut == 'AF' or quotation.credit_type.shortcut == 'AP':
+                    if quotation.include_taxes:
+                        dr=(quotation.interest_rate_value / 360 )/(1+(quotation.tax_id/100))
+                    else:
+                        dr=(quotation.interest_rate_value / 360 )
                 else:
-                    dr=(quotation.interest_rate_value / 360 * (1+(quotation.tax_id/100)))
+                    if quotation.include_taxes:
+                        dr=(quotation.interest_rate_value / 360 )
+                    else:
+                        dr=(quotation.interest_rate_value / 360 ) * (1+(quotation.tax_id/100))
                 if quotation.frequency_id.days == 30:
                     dm=calendar.monthrange(di.year,di.month)[1]
-                    rate=dr/100*30.5
+                    rate=(dr/100*30.5)
                 if quotation.frequency_id.days == 15:
                     dm=15
-                    rate=dr/100*15.25
+                    rate=(dr/100*15.25)
                 if quotation.frequency_id.days == 7:
                     dm=7
-                    rate=dr/100*7
+                    rate=(dr/100*7)
             amortization_ids = [(5, 0, 0)]
         
             quotation.amortization_ids = amortization_ids
             
             if quotation.credit_type.shortcut == 'AF' or quotation.credit_type.shortcut == 'AP':
-                quotation.amount_si=quotation.amount/(1+(quotation.tax_id/100))
-                ra=quotation.amount_si
-                quotation.purchase_option2=quotation.purchase_option/100*ra
+                quotation.amount_si=(quotation.amount/(1+(quotation.tax_id/100)))
+                ra=(quotation.amount_si)
+                quotation.purchase_option2=(quotation.purchase_option/100*ra)
                 if quotation.credit_type.shortcut == 'AP':
-                    quotation.residual_value=ra*quotation.residual_porcentage/100
+                    quotation.residual_value=(ra*quotation.residual_porcentage/100)
                 if quotation.credit_type.shortcut == 'AF':
-                    quotation.iva=ra*quotation.tax_id/100
-                    quotation.total_guarantee=ra*quotation.guarantee_percentage/100
-                quotation.iva_purchase=quotation.purchase_option2*(quotation.tax_id/100)
-                quotation.total_purchase=quotation.purchase_option2+quotation.iva_purchase
+                    quotation.iva=(ra*quotation.tax_id/100)
+                    quotation.total_guarantee=(ra*quotation.guarantee_percentage/100)
+                quotation.iva_purchase=(quotation.purchase_option2*(quotation.tax_id/100))
+                quotation.total_purchase=(quotation.purchase_option2+quotation.iva_purchase)
                 quotation.total_commision=0
                 for com in quotation.commision_ids:
-                    quotation.total_commision=quotation.total_commision+(com.value_commision)
+                    quotation.total_commision=(quotation.total_commision+(com.value_commision))
                 if quotation.credit_type.shortcut == 'AF':
                     pay=((ra*(rate)*pow((1+(rate)),quotation.term))-(0*(rate)))/(pow(1+(rate),quotation.term)-1)
                 if quotation.credit_type.shortcut == 'AP':
@@ -122,7 +140,6 @@ class SaleOrder(models.Model):
             else:
                 ra=quotation.amount
                 pay=quotation.amount/((1-(1/pow((1+(rate)),quotation.term)))/(rate))
-            pay=round(pay,2)
             for i in range(quotation.term):
                 if quotation.frequency_id.days == 30:
                     df = df + relativedelta(months=1)
@@ -149,26 +166,38 @@ class SaleOrder(models.Model):
                 #else:
                 #    if quotation.calculation_base =='360/360':
                 #        dm=dmt
-                ici=round(((ra*dr*dm)/100),2)
+                if quotation.credit_type.shortcut == 'AF' or quotation.credit_type.shortcut == 'AP':
+                    interest=round(((ra*dr*dm)/100),2)
+                else:
+                    ici=round(((ra*dr*dm)/100),2)
+                    interest=ici/(1+(quotation.tax_id/100))
+                ivainterest=interest*(quotation.tax_id/100)
                 if i == (quotation.term-1):
                     if quotation.credit_type.shortcut == 'AP':
                         pay=round(pay,2)
-                    else:    
-                        pay=round(ra+ici,2)
+                    else:
+                        if quotation.credit_type.shortcut == 'AF':
+                            pay=round(ra+interest,2)
+                        else:
+                            pay=round(ra+ici,2)
                 else:
                     pay=round(pay,2)
-                capital=pay-ici
-                interest=round(ici/(1+(quotation.tax_id/100)),2)
-                ivainterest=round(ici*(quotation.tax_id/100),2)
-                ivacapital=capital*(quotation.tax_id/100)
-                fb=ra-capital
+                if quotation.credit_type.shortcut == 'AF' or quotation.credit_type.shortcut == 'AP':
+                    capital=round((pay-(interest)),2)
+                else:
+                    capital=round((pay-ici),2)
+
+                ivacapital=(capital*(quotation.tax_id/100))
+                fb=round((ra-capital),2)
                 totalrent=0
                 ivarent=0
                 if quotation.credit_type.shortcut == 'AF': 
-                    totalrent=pay+ivainterest+ivacapital
+                    totalrent=round((pay+ivainterest+ivacapital),2)
+                    totalrent=round(totalrent,2)
                 if quotation.credit_type.shortcut == 'AP':
-                    ivarent=pay*(quotation.tax_id/100)
-                    totalrent=pay+ivarent
+                    ivarent=round((pay*(quotation.tax_id/100)),2)
+                    totalrent=round((pay+ivarent),2)
+                    totalrent=round(totalrent,2)
                 
                 amortization_cs_ids = [(4, 0, 0)]
                 data = {
@@ -329,6 +358,8 @@ class SaleOrder(models.Model):
         'extenss.request.amortization', 
         'sale_order_id', 
         string='Amortization Table')
+    rate_arrears_interest = fields.Float('Factor', (2,1), readonly=True, tracking=True,translate=True)
+    factor_rate = fields.Float('Rate interest moratorium', (2,6), compute='_compute_factor_rate', store=True, tracking=True, translate=True)
     
     company_currency = fields.Many2one(string='Currency', related='company_id.currency_id', readonly=True, relation="res.currency")
     company_id = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.company.id)
@@ -427,7 +458,7 @@ class SaleOrder(models.Model):
         self.fondeador=0
         self.description=''
 
-
+        self.rate_arrears_interest = product.rate_arrears_interest
         self.term = product.term_extra
         self.credit_type = self.product_id.credit_type.id
         self.calculation_base = self.product_id.calculation_base.name
@@ -499,6 +530,10 @@ class SaleOrder(models.Model):
             if reg.partner_type == 'person':
                 return {'domain': {'product_id': [('apply_person', '=', 'True')]}}
 
+    @api.depends('rate_arrears_interest')
+    def _compute_factor_rate(self):
+        for reg in self:
+            reg.factor_rate = reg.rate_arrears_interest * reg.interest_rate_value
     #@api.onchange('product_id')
     #def _onchange_product_id(self):
     #    if not self.product_id:

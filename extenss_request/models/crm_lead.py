@@ -93,9 +93,10 @@ class Lead(models.Model):
 
     @api.constrains('stage_id')
     def _check_stage_id(self):
-        self.validations()
-        self.user_send_req = self.env.user.id
-        #self.stage_id =  2
+        if self.stage_id.id != 1:
+            self.validations()
+            self.user_send_req = self.env.user.id
+            #self.stage_id =  2
 
     def open_docs_count(self):
         domain = ['|', ('lead_id', '=', [self.id]), ('partner_id', '=', self.partner_id.id)]
@@ -146,7 +147,6 @@ class Lead(models.Model):
         rec_accnt = self.env['extenss.credit.account']
         exist_rec = rec_accnt.search([('customer_id', '=', self.partner_id.id)])
         if not exist_rec:
-            print("Entra al metodo")
             rec_accnt.create({
                 'customer_id': self.partner_id.id,
                 'date_opening': datetime.now().date(),
@@ -219,6 +219,8 @@ class Lead(models.Model):
                 'base_rate_value': brv,
                 'differential': rec_sale.point_base_interest_rate,
                 'interest_rate': rec_sale.interest_rate_value,
+                'rate_arrears_interest': rec_sale.rate_arrears_interest,
+                'factor_rate': rec_sale.factor_rate,
                 'type_credit': rec_sale.credit_type.id,
                 'hiring_date': rec_sale.date_start,
                 'first_payment_date': rec_sale.date_first_payment,
@@ -250,7 +252,8 @@ class Lead(models.Model):
                 'leased_team': rec_sale.description,
                 'amount_si': rec_sale.amount_si,
                 'tax_amount': rec_sale.tax_amount,
-                'date_limit_pay': rec_sale.date_limit_pay
+                'date_limit_pay': rec_sale.date_limit_pay,
+                'calculation_base': rec_sale.calculation_base
             })
             
             for amort in rec_sale.amortization_ids:
@@ -274,10 +277,7 @@ class Lead(models.Model):
                         'amortization_ids': amortization_ids
                     })
     def validations(self):
-        if self.partner_type == 'person':
-            docs = self.env['documents.document'].search([('lead_id', '=', self.id)])
-        else:
-            docs = self.env['documents.document'].search([('partner_id', '=', self.partner_id.id)])
+        docs = self.env['documents.document'].search(['|', ('partner_id', '=', self.partner_id.id), ('lead_id', '=', self.id)])
             
         for reg_docs in docs:
             if not reg_docs.attachment_id:
